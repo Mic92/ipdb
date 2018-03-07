@@ -47,7 +47,7 @@ def _init_pdb(context=3, commands=[]):
     try:
         p = debugger_cls(def_colors, context=context)
     except TypeError:
-        p = debugger_cls(def_colors)
+        p = debugger_cls(def_colors, context=context)
     p.rcLines.extend(commands)
     return p
 
@@ -69,9 +69,9 @@ def set_trace(frame=None, context=3):
         p.shell.restore_sys_module_state()
 
 
-def post_mortem(tb=None):
+def post_mortem(tb=None, context=3):
     wrap_sys_excepthook()
-    p = _init_pdb()
+    p = _init_pdb(context)
     p.reset()
     if tb is None:
         # sys.exc_info() returns (type, value, traceback) if an exception is
@@ -81,8 +81,8 @@ def post_mortem(tb=None):
         p.interaction(None, tb)
 
 
-def pm():
-    post_mortem(sys.last_traceback)
+def pm(context=3):
+    post_mortem(sys.last_traceback, context)
 
 
 def run(statement, globals=None, locals=None):
@@ -98,13 +98,13 @@ def runeval(expression, globals=None, locals=None):
 
 
 @contextmanager
-def launch_ipdb_on_exception():
+def launch_ipdb_on_exception(context=3):
     try:
         yield
     except Exception:
         e, m, tb = sys.exc_info()
         print(m.__repr__(), file=sys.stderr)
-        post_mortem(tb)
+        post_mortem(tb, context)
     finally:
         pass
 
